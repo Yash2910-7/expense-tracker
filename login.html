@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Expense Tracker</title>
+    <!-- Use requested fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base reset to handle browser discrepancies */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* Apply basic body styles with dark theme */
+        body {
+            background-color: #0a0e1a;
+            font-family: 'DM Sans', sans-serif;
+            color: #f1f5f9;
+            /* Flexing to perfectly center the child wrapper vertically and horizontally */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Specific typography assignment */
+        h1, h2 { font-family: 'Syne', sans-serif; }
+
+        /* Auth card styling for visual focus */
+        .auth-card {
+            /* Requested card dark background */
+            background: #141929;
+            /* Extra thick padding */
+            padding: 3rem;
+            /* Very rounded corners */
+            border-radius: 16px;
+            /* Width calculation for responsiveness */
+            width: 100%;
+            max-width: 400px;
+            /* Adds nice subtle glow border */
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            /* Add blue shadow */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1);
+            /* Small entrance animation */
+            animation: slide-up 0.5s ease-out;
+        }
+
+        /* Slide up keyframes setup */
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Centered form title */
+        .auth-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            /* Cyan subtle glow */
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Container for spacing element pairs */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Label aesthetic */
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        /* Unified input structures */
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            /* Slightly darker than card */
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #f1f5f9;
+            font-family: inherit;
+            /* Transmitting states */
+            transition: all 0.3s ease;
+        }
+        
+        /* Focus state */
+        .form-control:focus {
+            outline: none;
+            /* Border turns pure blue */
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Form submit button component */
+        .btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        /* Button hover reaction */
+        .btn:hover {
+            background: #60a5fa;
+            /* Lift up effect */
+            transform: translateY(-2px);
+            /* Glow enhancement */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Text redirect link beneath form */
+        .auth-footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        
+        /* Anchor tag styling override */
+        .auth-footer a {
+            color: #06b6d4; /* Requested Cyan */
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+        
+        /* Hover to highlight text */
+        .auth-footer a:hover {
+            color: #67e8f9;
+        }
+
+        /* Alert block to flash errors dynamically from jinja */
+        .alerts { margin-bottom: 1rem; }
+        .alert {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        /* Specific coloring using red themes for errors */
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid #ef4444;
+        }
+        /* Green theme for successes */
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #86efac;
+            border: 1px solid #22c55e;
+        }
+    </style>
+</head>
+<!-- Body wraps logic rendering -->
+<body>
+
+    <!-- Container Card bounding UI features -->
+    <div class="auth-card">
+        <h2 class="auth-title">Welcome Back</h2>
+        
+        <!-- Logic block: Catch Python server flash messages -->
+        <div class="alerts">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <!-- Render dynamic classes based on Python response category -->
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Start logic pipeline connecting to Flask route POST `/login` -->
+        <form method="POST" action="/login">
+            <!-- Username form field requirement -->
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" required placeholder="Enter your username">
+            </div>
+            
+            <!-- Secure password input field (dots display only) -->
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required placeholder="Enter your password">
+            </div>
+            
+            <button type="submit" class="btn">Log In</button>
+        </form>
+
+        <!-- Redirect prompt to secondary form layout -->
+        <div class="auth-footer">
+            Don't have an account? <a href="/register">Sign up now</a>
+        </div>
+    </div>
+
+</body>
+</html>
