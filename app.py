@@ -60,17 +60,21 @@ def create_app():
 
     # Verify and prepare PostgreSQL database, or fall back to SQLite
     db_uri = Config.SQLALCHEMY_DATABASE_URI
-    is_postgres_ready = check_and_prepare_postgres(db_uri)
     
-    if not is_postgres_ready:
-        print("PostgreSQL was not ready or unreachable. Falling back to local SQLite...")
-        db_dir = os.path.join(app.root_path, 'database')
-        os.makedirs(db_dir, exist_ok=True)
-        sqlite_uri = f"sqlite:///{os.path.join(db_dir, 'expense_tracker.db')}"
-        app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_uri
+    # If we are on Render or a cloud host, the database is already managed and ready.
+    if os.environ.get('RENDER') or not ('localhost' in db_uri or '127.0.0.1' in db_uri):
+        print("Cloud deployment detected. Utilizing managed PostgreSQL database.")
     else:
-        print("PostgreSQL is verified and ready. Establishing SQLAlchemy context.")
-
+        is_postgres_ready = check_and_prepare_postgres(db_uri)
+        if not is_postgres_ready:
+            print("PostgreSQL was not ready or unreachable. Falling back to local SQLite...")
+            db_dir = os.path.join(app.root_path, 'database')
+            os.makedirs(db_dir, exist_ok=True)
+            sqlite_uri = f"sqlite:///{os.path.join(db_dir, 'expense_tracker.db')}"
+            app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_uri
+        else:
+            print("PostgreSQL is verified and ready. Establishing SQLAlchemy context.")
+            
     # Initialize extensions
     db.init_app(app)
 
