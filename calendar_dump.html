@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Calendar - Smart Spend AI</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Custom Theme Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<style>
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: var(--border-color) !important;
+    }
+    .fc-theme-standard .fc-scrollgrid {
+        border-color: var(--border-color) !important;
+    }
+    .fc-daygrid-day {
+        background-color: var(--bg-surface) !important;
+        transition: background-color 0.2s;
+    }
+    .fc-daygrid-day:hover {
+        background-color: var(--bg-surface-elevated) !important;
+    }
+    .fc-daygrid-day-number {
+        color: var(--text-primary) !important;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        padding: 8px !important;
+    }
+    .fc-col-header-cell-cushion {
+        color: var(--text-secondary) !important;
+        font-weight: 600;
+        padding: 8px 0 !important;
+        font-family: 'Outfit', sans-serif;
+    }
+    .fc-event {
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .fc-button-primary {
+        background-color: var(--accent-primary) !important;
+        border-color: var(--accent-primary) !important;
+        transition: var(--transition-smooth);
+    }
+    .fc-button-primary:hover {
+        background-color: #4f46e5 !important;
+        border-color: #4f46e5 !important;
+    }
+    .fc-button-active {
+        background-color: var(--accent-secondary) !important;
+        border-color: var(--accent-secondary) !important;
+    }
+    .fc-header-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+</style>
+
+</head>
+<body class="">
+
+    
+    <!-- Logged in App Framework -->
+    <div class="app-wrapper">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <i class="bi bi-cpu-fill"></i>
+                <span>Smart Spend AI</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item ">
+                    <a href="/">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/expenses">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Expenses CRUD</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/income">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Income Tracker</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/savings">
+                        <i class="bi bi-piggy-bank-fill"></i>
+                        <span>Savings Goals</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/recurring">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>Recurring Bills</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item active">
+                    <a href="/calendar">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Calendar Grid</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/budget-planner">
+                        <i class="bi bi-calculator-fill"></i>
+                        <span>Budget Planner</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/challenges">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span>Challenges</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item ">
+                    <a href="/reports">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        <span>Export Center</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar">
+                        Y
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">Yash</span>
+                        <span class="user-role">SaaS Client</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- MAIN PAGE CONTENT -->
+        <main class="app-main">
+            
+            <!-- HEADER TOOLBAR -->
+            <header class="app-header">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary d-lg-none" id="mobile-sidebar-toggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h4 class="mb-0">Calendar Spending Ledger</h4>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Quick Export Shortcuts -->
+                    <div class="d-none d-md-flex align-items-center gap-1">
+                        <a href="/reports/csv" class="btn btn-sm btn-outline-success text-success border-success px-2.5 py-1" title="Quick Export CSV">
+                            <i class="bi bi-filetype-csv"></i>
+                        </a>
+                        <a href="/reports/pdf" class="btn btn-sm btn-outline-danger text-danger border-danger px-2.5 py-1" title="Quick Export PDF">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Currency Settings Selector -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-currency-exchange text-muted"></i>
+                        <select class="form-select form-select-sm dropdown-menu-dark-custom text-white" id="currency-selector" style="width: 85px;">
+                            <option value="INR" selected>₹ INR</option>
+                            <option value="USD" >$ USD</option>
+                            <option value="EUR" >€ EUR</option>
+                            <option value="GBP" >£ GBP</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Theme persistent toggle float button -->
+                    <button class="btn btn-sm btn-outline-secondary" id="theme-toggle-btn">
+                        
+                        <i class="bi bi-sun-fill"></i>
+                        
+                    </button>
+                    
+                    <!-- Profile dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-sm dropdown-toggle dropdown-menu-dark-custom text-white border-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom">
+                            <li><a class="dropdown-item dropdown-item-custom" href="/budget-planner"><i class="bi bi-gear-fill me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item dropdown-item-custom text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            
+            
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card-premium">
+            <div id="calendar-grid"></div>
+        </div>
+    </div>
+</div>
+
+            
+        </main>
+        
+    </div>
+    
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Core Application Javascript -->
+    <script src="/static/js/main.js"></script>
+    
+    <!-- Flash Messages parser converting alerts to dynamic Toast overlays -->
+    <script>
+        
+            
+        
+    </script>
+    
+    
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar-grid');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            themeSystem: 'standard',
+            events: '/api/calendar-events',
+            eventClick: function(info) {
+                // Clicking on a calendar item filters the table or alerts the total spent
+                showToast(`Total logged spending on this date: ${info.event.title}`, "info");
+            }
+        });
+        calendar.render();
+    });
+</script>
+
+</body>
+</html>

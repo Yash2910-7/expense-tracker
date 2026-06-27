@@ -1,4 +1,12 @@
 Flask
+Flask-SQLAlchemy
+psycopg2-binary
+PyJWT
 pandas
 numpy
 scikit-learn
+reportlab
+python-dotenv
+matplotlib
+pillow
+gunicorn
