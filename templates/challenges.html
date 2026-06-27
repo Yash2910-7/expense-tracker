@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Monthly Challenges - Smart Spend AI{% endblock %}
+{% block header_title %}Gamified Financial Challenges{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- REWARD POINTS STATS -->
+    <div class="col-md-4">
+        <div class="card-premium text-center">
+            <h5 class="text-secondary small mb-2"><i class="bi bi-award-fill me-1"></i>Savings Rewards Profile</h5>
+            <div class="display-3 fw-bold text-warning mb-1">180</div>
+            <span class="badge bg-warning text-dark px-3 py-2 fw-semibold">Level 3: Wealth Builder</span>
+            <div class="progress mt-3" style="height: 6px; background-color: var(--bg-surface-elevated);">
+                <div class="progress-bar bg-warning" style="width: 60%"></div>
+            </div>
+            <span class="text-secondary small d-block mt-2">120 points until level up!</span>
+        </div>
+        
+        <div class="card-premium mt-4">
+            <h5>How Challenges Work</h5>
+            <p class="text-secondary small mt-2 mb-0">Our AI engine scans your transaction histories to find savings leakages and auto-generates challenges. Accept and complete challenges to gain reward points and build robust financial habits!</p>
+        </div>
+    </div>
+    
+    <!-- CHALLENGES CARDS LIST -->
+    <div class="col-md-8">
+        <div class="row g-3">
+            {% for challenge in challenges %}
+            <div class="col-12">
+                <div class="card-premium d-flex flex-sm-row justify-content-between align-items-sm-center gap-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="p-3 bg-dark rounded border border-warning text-warning d-flex align-items-center justify-content-center" style="font-size: 1.5rem; width: 50px; height: 50px;">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 text-white">{{ challenge.title }}</h5>
+                            <p class="text-secondary small mb-1">{{ challenge.desc }}</p>
+                            <span class="badge bg-secondary me-2">{{ challenge.difficulty }}</span>
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>{{ challenge.reward }}</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-warning text-white btn-sm px-4 py-2" onclick="showToast('Challenge accepted! Track progress on your ledger page.', 'success'); this.disabled=true; this.innerText='Active';">
+                        Accept
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

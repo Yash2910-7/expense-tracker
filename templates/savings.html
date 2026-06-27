@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Savings Goals - Smart Spend AI{% endblock %}
+{% block header_title %}Savings Target Hub{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- ADD SAVINGS GOAL PANEL -->
+    <div class="col-lg-4">
+        <div class="card-premium">
+            <h5 class="mb-4"><i class="bi bi-plus-circle-fill text-info me-2"></i>Define Savings Goal</h5>
+            
+            <form action="{{ url_for('savings.add') }}" method="POST">
+                <div class="mb-3">
+                    <label for="title" class="form-label text-secondary small">Goal Title</label>
+                    <input type="text" class="form-control bg-dark border-secondary text-white" id="title" name="title" required placeholder="Buy Laptop, Down payment...">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="target_amount" class="form-label text-secondary small">Target Amount ({{ currency_symbol }})</label>
+                    <input type="number" step="0.01" class="form-control bg-dark border-secondary text-white" id="target_amount" name="target_amount" required placeholder="0.00">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="current_amount" class="form-label text-secondary small">Currently Saved ({{ currency_symbol }})</label>
+                    <input type="number" step="0.01" class="form-control bg-dark border-secondary text-white" id="current_amount" name="current_amount" value="0" placeholder="0.00">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="deadline" class="form-label text-secondary small">Target Deadline</label>
+                    <input type="date" class="form-control bg-dark border-secondary text-white" id="deadline" name="deadline" required>
+                </div>
+                
+                <button type="submit" class="btn btn-premium w-100 py-2 btn-info text-white">
+                    <i class="bi bi-plus-lg me-2"></i>Launch Goal
+                </button>
+            </form>
+        </div>
+        
+        <!-- SAVINGS INDEX INSIGHTS -->
+        <div class="card-premium mt-4">
+            <h5 class="mb-3"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Goal Advisor</h5>
+            <div class="small text-secondary">
+                <p>Your calculated net monthly savings rate is <strong>{{ currency_symbol }}{{ "{:,.2f}".format(monthly_savings) }}</strong>.</p>
+                <p class="mb-0">Set your goals and the AI system will evaluate whether your savings velocity is sufficient to satisfy the deadline constraints.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GOALS PROGRESS AND DASHBOARD PANEL -->
+    <div class="col-lg-8">
+        <div class="row g-3">
+            {% for goal in goals %}
+            <div class="col-md-6">
+                <!-- If forecast date is past deadline, show warning glow border -->
+                <div class="card-premium h-100 {% if goal.status_warning %}card-anomaly{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="mb-0 text-white">{{ goal.title }}</h5>
+                        <div class="d-flex gap-1">
+                            <!-- Edit Button -->
+                            <button class="btn btn-xs btn-outline-warning py-0 px-2 small edit-btn"
+                                    data-id="{{ goal.id }}"
+                                    data-title="{{ goal.title }}"
+                                    data-target="{{ goal.target_amount }}"
+                                    data-current="{{ goal.current_amount }}"
+                                    data-deadline="{{ goal.deadline }}">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            
+                            <!-- Delete Button -->
+                            <form action="{{ url_for('savings.delete', id=goal.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this savings goal?');" style="display:inline;">
+                                <button type="submit" class="btn btn-xs btn-outline-danger py-0 px-2 small">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-baseline mb-1">
+                            <span class="text-secondary small">Progress</span>
+                            <span class="fw-bold text-info">{{ goal.progress_pct }}%</span>
+                        </div>
+                        <div class="progress" style="height: 10px; background-color: var(--bg-surface-elevated);">
+                            <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" style="width: {{ goal.progress_pct }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between small text-secondary mb-3">
+                        <div>Saved: <strong>{{ currency_symbol }}{{ "{:,.2f}".format(goal.current_amount) }}</strong></div>
+                        <div>Target: <strong>{{ currency_symbol }}{{ "{:,.2f}".format(goal.target_amount) }}</strong></div>
+                    </div>
+                    
+                    <div class="border-top border-secondary pt-3 mt-2">
+                        <div class="d-flex justify-content-between small text-secondary mb-2">
+                            <span>Remaining Amount:</span>
+                            <strong class="text-white">{{ currency_symbol }}{{ "{:,.2f}".format(goal.remaining_amount) }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small text-secondary mb-2">
+                            <span>Deadline Countdown:</span>
+                            <strong class="{% if goal.days_left < 15 %}text-danger{% else %}text-white{% endif %}">{{ goal.days_left }} Days left</strong>
+                        </div>
+                        
+                        <!-- Prediction insights -->
+                        <div class="p-2 mt-2 rounded bg-dark border border-secondary text-secondary small">
+                            <i class="bi bi-cpu text-info me-2"></i>
+                            {% if goal.status_warning %}
+                                <span class="text-warning">⚠️ {{ goal.prediction }} Target Month: {{ goal.forecast_date or 'N/A' }} (Delayed).</span>
+                            {% else %}
+                                <span>{{ goal.prediction }} {% if goal.forecast_date %}Target Date: {{ goal.forecast_date }}{% endif %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="card-premium text-center py-5 text-muted">
+                    <i class="bi bi-piggy-bank-fill text-secondary display-4 d-block mb-3"></i>
+                    No active savings targets defined. Start setting goals to gamify your financial life!
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- EDIT SAVINGS GOAL MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Modify Savings Goal</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form id="editForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_title" class="form-label text-secondary small">Goal Title</label>
+                        <input type="text" class="form-control bg-dark border-secondary text-white" id="edit_title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_target" class="form-label text-secondary small">Target Amount ({{ currency_symbol }})</label>
+                        <input type="number" step="0.01" class="form-control bg-dark border-secondary text-white" id="edit_target" name="target_amount" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_current" class="form-label text-secondary small">Saved Amount ({{ currency_symbol }})</label>
+                        <input type="number" step="0.01" class="form-control bg-dark border-secondary text-white" id="edit_current" name="current_amount" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_deadline" class="form-label text-secondary small">Deadline</label>
+                        <input type="date" class="form-control bg-dark border-secondary text-white" id="edit_deadline" name="deadline" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary btn-sm text-white" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-info btn-sm px-4 text-white">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Bind modal handlers
+    const editModalEl = document.getElementById('editModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+    const editForm = document.getElementById('editForm');
+    
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const title = btn.getAttribute('data-title');
+            const target = btn.getAttribute('data-target');
+            const current = btn.getAttribute('data-current');
+            const deadline = btn.getAttribute('data-deadline');
+            
+            document.getElementById('edit_title').value = title;
+            document.getElementById('edit_target').value = target;
+            document.getElementById('edit_current').value = current;
+            document.getElementById('edit_deadline').value = deadline;
+            
+            // Adjust form POST target dynamically
+            editForm.setAttribute('action', `/savings/edit/${id}`);
+            
+            editModal.show();
+        });
+    });
+</script>
+{% endblock %}

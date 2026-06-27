@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Export Center - Smart Spend AI{% endblock %}
+{% block header_title %}Reports & Exports Terminal{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card-premium h-100">
+            <h5 class="mb-4"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>PDF Wealth Auditing</h5>
+            <p class="text-secondary small">Compile and download a comprehensive monthly audit report. The PDF includes: executive balance grids, category distributions, transaction charts, savings status, and active AI financial recommendations.</p>
+            
+            <div class="border border-secondary rounded p-3 bg-dark mb-4">
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                    <span>Audit Scope:</span>
+                    <strong class="text-white">Full Historical Log</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                    <span>Active Currency:</span>
+                    <strong class="text-white">{{ user.currency }} ({{ currency_symbol }})</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-0 small text-secondary">
+                    <span>File Format:</span>
+                    <strong class="text-white">Adobe PDF (.pdf)</strong>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('reports.export_pdf') }}" class="btn btn-premium w-100 py-3 btn-danger text-white">
+                <i class="bi bi-cloud-arrow-down-fill me-2"></i>Generate PDF Report
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card-premium h-100">
+            <h5 class="mb-4"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i>CSV Ledger Export</h5>
+            <p class="text-secondary small">Export raw transaction logs for manual spreadsheets or spreadsheet integrations. The CSV sheets contain separate entries for incomes and expenses in both local currency and base INR conversions.</p>
+            
+            <div class="border border-secondary rounded p-3 bg-dark mb-4">
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                    <span>Income Items:</span>
+                    <strong class="text-success">Available in spreadsheet</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                    <span>Expense Items:</span>
+                    <strong class="text-danger">Available in spreadsheet</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-0 small text-secondary">
+                    <span>File Format:</span>
+                    <strong class="text-white">Comma Separated CSV (.csv)</strong>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('reports.export_csv') }}" class="btn btn-premium w-100 py-3 btn-success text-white">
+                <i class="bi bi-filetype-csv me-2"></i>Export CSV Sheet
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

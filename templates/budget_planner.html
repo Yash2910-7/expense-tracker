@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Budget Planner - Smart Spend AI{% endblock %}
+{% block header_title %}Monthly Budget Planner{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- BUDGET UPDATES FORM -->
+    <div class="col-lg-5">
+        <div class="card-premium h-100">
+            <h5 class="mb-4"><i class="bi bi-gear-fill text-primary me-2"></i>Global Budget Settings</h5>
+            
+            <form action="{{ url_for('api.update_budget') }}" method="POST">
+                <div class="mb-4">
+                    <label for="new_budget" class="form-label text-secondary small">Set Monthly Global Limit ({{ currency_symbol }})</label>
+                    <input type="number" class="form-control bg-dark border-secondary text-white fs-3 text-center fw-bold" id="new_budget" name="new_budget" value="{{ budget }}" required>
+                </div>
+                
+                <button type="submit" class="btn btn-premium w-100 py-3 mb-4">
+                    <i class="bi bi-save-fill me-2"></i>Save Budget Configuration
+                </button>
+            </form>
+            
+            <div class="border-top border-secondary pt-3 mt-2">
+                <h5>50/30/20 Rule Suggestions</h5>
+                <p class="text-secondary small mt-2">To build robust wealth, follow these industry allocations based on your income:</p>
+                <div class="d-flex flex-column gap-2 small">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary">Needs (Rent, Bills, Food):</span>
+                        <strong class="text-info">50% ({{ currency_symbol }}{{ "{:,.2f}".format(budget * 0.5) }})</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary">Wants (Shopping, Entertainment, Travel):</span>
+                        <strong class="text-warning">30% ({{ currency_symbol }}{{ "{:,.2f}".format(budget * 0.3) }})</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary">Savings & Investments:</span>
+                        <strong class="text-success">20% ({{ currency_symbol }}{{ "{:,.2f}".format(budget * 0.2) }})</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CATEGORY ALLOCATIONS VISUALIZER -->
+    <div class="col-lg-7">
+        <div class="card-premium h-100">
+            <!-- Global Remaining Budget Display -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0"><i class="bi bi-pie-chart-fill text-info me-2"></i>Budget Health</h5>
+                <h4 class="mb-0 fw-bold {% if (budget - category_summary.values()|sum) < 0 %}text-danger{% else %}text-success{% endif %}">
+                    {{ currency_symbol }}{{ "{:,.2f}".format(budget - category_summary.values()|sum) }} Left
+                </h4>
+            </div>
+            <div class="progress mb-4" style="height: 12px; background-color: var(--bg-surface-elevated);">
+                {% set spent_pct = ((category_summary.values()|sum / budget) * 100) if budget > 0 else 0 %}
+                <div class="progress-bar {% if spent_pct > 90 %}bg-danger{% elif spent_pct > 75 %}bg-warning{% else %}bg-primary{% endif %}" 
+                     style="width: {{ spent_pct }}%;"></div>
+            </div>
+            <hr class="border-secondary opacity-25 my-4">
+
+            <h5 class="mb-3">Active Category Allocations</h5>
+            <p class="text-secondary small">Your spending totals in active categories compared to the proportional parts of your global budget limit.</p>
+            
+            <div class="d-flex flex-column gap-3 mt-4">
+                {% for cat, val in category_summary.items() %}
+                    <div>
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span>{{ cat }}</span>
+                            <!-- Proportional limit (e.g. assume typical allocations or show real values) -->
+                            <span>{{ currency_symbol }}{{ "{:,.2f}".format(val) }} spent</span>
+                        </div>
+                        <div class="progress" style="height: 8px; background-color: var(--bg-surface-elevated);">
+                            <!-- Proportional percentage relative to global budget -->
+                            {% set pct = (val / budget * 100) if budget > 0 else 0 %}
+                            <div class="progress-bar {% if pct > 100 %}bg-danger{% elif pct > 80 %}bg-warning{% else %}bg-primary{% endif %}" style="width: {{ [pct, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        No transactions logged to calculate category allocations.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[action="/api/budget"]');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const origText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+                btn.disabled = true;
+
+                fetch('/api/budget', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ budget: document.getElementById('new_budget').value })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Budget successfully updated!', 'success');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message || 'Failed to update budget', 'danger');
+                        btn.innerHTML = origText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    showToast('Network error while saving budget', 'danger');
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Expense Tracker AI{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Custom Theme Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- PWA & Mobile Optimization -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if user and user.theme == 'light' %}light-theme{% endif %}">
+
+    {% if user %}
+    <!-- Logged in App Framework -->
+    <div class="app-wrapper">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <i class="bi bi-cpu-fill"></i>
+                <span>Smart Spend AI</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item {% if request.path == '/' %}active{% endif %}">
+                    <a href="{{ url_for('dashboard.index') }}">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/expenses' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('expenses.index') }}">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Expenses CRUD</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/income' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('income.index') }}">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Income Tracker</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/savings' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('savings.index') }}">
+                        <i class="bi bi-piggy-bank-fill"></i>
+                        <span>Savings Goals</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/recurring' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('recurring.index') }}">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>Recurring Bills</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/calendar' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('dashboard.calendar_view') }}">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Calendar Grid</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/budget-planner' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('dashboard.budget_planner') }}">
+                        <i class="bi bi-calculator-fill"></i>
+                        <span>Budget Planner</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/challenges' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('dashboard.challenges_view') }}">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span>Challenges</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if '/reports' in request.path %}active{% endif %}">
+                    <a href="{{ url_for('reports.index') }}">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        <span>Export Center</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar">
+                        {{ user.name[0] | upper if user.name else 'U' }}
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">{{ user.name }}</span>
+                        <span class="user-role">SaaS Client</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- MAIN PAGE CONTENT -->
+        <main class="app-main">
+            
+            <!-- HEADER TOOLBAR -->
+            <header class="app-header">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary d-lg-none" id="mobile-sidebar-toggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h4 class="mb-0">{% block header_title %}Analytics Engine{% endblock %}</h4>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Quick Export Shortcuts -->
+                    <div class="d-none d-md-flex align-items-center gap-1">
+                        <a href="{{ url_for('reports.export_csv') }}" class="btn btn-sm btn-outline-success text-success border-success px-2.5 py-1" title="Quick Export CSV">
+                            <i class="bi bi-filetype-csv"></i>
+                        </a>
+                        <a href="{{ url_for('reports.export_pdf') }}" class="btn btn-sm btn-outline-danger text-danger border-danger px-2.5 py-1" title="Quick Export PDF">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Native Share Button -->
+                    <button class="btn btn-sm btn-outline-primary px-2.5 py-1" id="share-app-btn" title="Share Smart Spend AI">
+                        <i class="bi bi-share-fill"></i>
+                    </button>
+                    
+                    <!-- Currency Settings Selector -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-currency-exchange text-muted"></i>
+                        <select class="form-select form-select-sm dropdown-menu-dark-custom text-white" id="currency-selector" style="width: 85px;">
+                            <option value="INR" {% if user.currency == 'INR' %}selected{% endif %}>₹ INR</option>
+                            <option value="USD" {% if user.currency == 'USD' %}selected{% endif %}>$ USD</option>
+                            <option value="EUR" {% if user.currency == 'EUR' %}selected{% endif %}>€ EUR</option>
+                            <option value="GBP" {% if user.currency == 'GBP' %}selected{% endif %}>£ GBP</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Theme persistent toggle float button -->
+                    <button class="btn btn-sm btn-outline-secondary" id="theme-toggle-btn">
+                        {% if user.theme == 'light' %}
+                        <i class="bi bi-moon-stars-fill"></i>
+                        {% else %}
+                        <i class="bi bi-sun-fill"></i>
+                        {% endif %}
+                    </button>
+                    
+                    <!-- Profile dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-sm dropdown-toggle dropdown-menu-dark-custom text-white border-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom">
+                            <li><a class="dropdown-item dropdown-item-custom" href="{{ url_for('dashboard.budget_planner') }}"><i class="bi bi-gear-fill me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item dropdown-item-custom text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            
+            {% block content %}{% endblock %}
+            
+        </main>
+        
+    </div>
+    {% else %}
+    <!-- Public Auth Layout wrapper -->
+    <div class="auth-wrapper">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Core Application Javascript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- PWA & Sharing Features -->
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('ServiceWorker registered with scope:', registration.scope))
+                    .catch(err => console.log('ServiceWorker registration failed:', err));
+            });
+        }
+
+        // Native Share API
+        document.addEventListener('DOMContentLoaded', () => {
+            const shareBtn = document.getElementById('share-app-btn');
+            if (shareBtn) {
+                if (navigator.share) {
+                    shareBtn.addEventListener('click', () => {
+                        navigator.share({
+                            title: 'Smart Spend AI',
+                            text: 'Check out this AI-Powered Expense Tracker!',
+                            url: window.location.href
+                        }).catch(err => console.log('Error sharing:', err));
+                    });
+                } else {
+                    shareBtn.style.display = 'none'; // Hide if not supported
+                }
+            }
+        });
+    </script>
+    
+    <!-- Flash Messages parser converting alerts to dynamic Toast overlays -->
+    <script>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    // Map flask categories to toast types
+                    let type = "{{ category }}";
+                    if (type === 'error' || type === 'danger') type = 'danger';
+                    else if (type === 'success') type = 'success';
+                    else if (type === 'warning') type = 'warning';
+                    else type = 'info';
+                    
+                    showToast("{{ message }}", type);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

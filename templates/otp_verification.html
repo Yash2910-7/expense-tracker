@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Code - Smart Spend AI{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card">
+    <div class="auth-header">
+        <i class="bi bi-patch-check-fill text-info"></i>
+        <h2 class="mt-2">Verify OTP</h2>
+        <p class="text-secondary small">A 6-digit code was sent to <strong>{{ email }}</strong></p>
+    </div>
+    
+    <form action="{{ url_for('auth.verify_otp') }}" method="POST">
+        <div class="mb-4">
+            <label for="otp" class="form-label text-secondary small">Enter 6-Digit OTP</label>
+            <input type="text" class="form-control bg-dark border-secondary text-white text-center fs-2 tracking-wide" id="otp" name="otp" required maxlength="6" placeholder="000000" autocomplete="off">
+        </div>
+        
+        <button type="submit" class="btn btn-premium w-100 py-2.5 mb-4">
+            Verify & Proceed
+        </button>
+    </form>
+    
+    <div class="text-center">
+        <p class="text-secondary small">Didn't receive the email? <a href="{{ url_for('auth.forgot_password') }}" class="text-primary text-decoration-none">Resend OTP</a></p>
+    </div>
+</div>
+{% endblock %}

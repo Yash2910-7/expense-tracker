@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Expense Calendar - Smart Spend AI{% endblock %}
+{% block header_title %}Calendar Spending Ledger{% endblock %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<style>
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: var(--border-color) !important;
+    }
+    .fc-theme-standard .fc-scrollgrid {
+        border-color: var(--border-color) !important;
+    }
+    .fc-daygrid-day {
+        background-color: var(--bg-surface) !important;
+        transition: background-color 0.2s;
+    }
+    .fc-daygrid-day:hover {
+        background-color: var(--bg-surface-elevated) !important;
+    }
+    .fc-daygrid-day-number {
+        color: var(--text-primary) !important;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        padding: 8px !important;
+    }
+    .fc-col-header-cell-cushion {
+        color: var(--text-secondary) !important;
+        font-weight: 600;
+        padding: 8px 0 !important;
+        font-family: 'Outfit', sans-serif;
+    }
+    .fc-event {
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .fc-button-primary {
+        background-color: var(--accent-primary) !important;
+        border-color: var(--accent-primary) !important;
+        transition: var(--transition-smooth);
+    }
+    .fc-button-primary:hover {
+        background-color: #4f46e5 !important;
+        border-color: #4f46e5 !important;
+    }
+    .fc-button-active {
+        background-color: var(--accent-secondary) !important;
+        border-color: var(--accent-secondary) !important;
+    }
+    .fc-header-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card-premium">
+            <div id="calendar-grid"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar-grid');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            themeSystem: 'standard',
+            events: '/api/calendar-events',
+            eventClick: function(info) {
+                // Clicking on a calendar item filters the table or alerts the total spent
+                showToast(`Total logged spending on this date: ${info.event.title}`, "info");
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

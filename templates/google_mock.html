@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Accounts - Sandbox Auth Consent</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .google-card {
+            background: #ffffff;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .google-logo {
+            text-align: center;
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .g-b { color: #4285F4; }
+        .g-r { color: #EA4335; }
+        .g-y { color: #FBBC05; }
+        .g-g { color: #34A853; }
+        
+        .account-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            background-color: #f8f9fa;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-google {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .btn-google:hover {
+            background-color: #1557b0;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="google-card">
+    <div class="google-logo">
+        <span class="g-b">G</span><span class="g-r">o</span><span class="g-y">o</span><span class="g-b">g</span><span class="g-g">l</span><span class="g-r">e</span>
+    </div>
+    
+    <h5 class="text-center mb-1 fw-normal">Sign in with Google</h5>
+    <p class="text-center text-muted small mb-4">to continue to <strong>Smart Spend AI Sandbox</strong></p>
+    
+    <form action="{{ url_for('auth.google_mock_page') }}" method="POST">
+        <div class="mb-3">
+            <label for="name" class="form-label text-muted small fw-semibold">Profile Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="Alex Finance" required>
+        </div>
+        
+        <div class="mb-4">
+            <label for="email" class="form-label text-muted small fw-semibold">Gmail Address</label>
+            <input type="email" class="form-control" id="email" name="email" value="alex.finance@gmail.com" required>
+        </div>
+        
+        <div class="account-badge">
+            <div class="avatar"><i class="bi bi-shield-check"></i></div>
+            <div class="small">
+                <div class="fw-semibold text-dark">Developer OAuth Simulation</div>
+                <div class="text-muted">Simulates official consent & redirection</div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('auth.login') }}" class="text-decoration-none text-muted small">Cancel</a>
+            <button type="submit" class="btn btn-google">Authorize Login</button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Smart Spend AI{% endblock %}
+{% block header_title %}Financial Intelligence Terminal{% endblock %}
+
+{% block content %}
+<!-- SKELETON LAYOUT FOR INTERACTIVE RENDER INITIATION -->
+<div class="row g-3">
+    <!-- METRICS CARDS GRID -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card-premium skeleton p-4">
+            <h5 class="text-secondary small mb-2"><i class="bi bi-wallet2 me-2"></i>Total Expenses</h5>
+            <h3 class="mb-0 fw-bold">{{ currency_symbol }}{{ "{:,.2f}".format(total_expenses) }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="card-premium skeleton p-4">
+            <h5 class="text-secondary small mb-2"><i class="bi bi-cash-stack me-2"></i>Total Income</h5>
+            <h3 class="mb-0 fw-bold text-success">{{ currency_symbol }}{{ "{:,.2f}".format(total_income) }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="card-premium skeleton p-4">
+            <h5 class="text-secondary small mb-2"><i class="bi bi-piggy-bank-fill me-2"></i>Total Savings</h5>
+            <h3 class="mb-0 fw-bold text-info">{{ currency_symbol }}{{ "{:,.2f}".format(total_savings) }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <!-- If over budget, add red caution flash border -->
+        <div class="card-premium skeleton p-4 {% if remaining_budget < 0 %}card-anomaly{% endif %}">
+            <h5 class="text-secondary small mb-2">
+                <i class="bi bi-calculator me-2"></i>Remaining Budget
+                <a href="/budget-planner" class="float-end text-secondary hover-primary" title="Update Total Budget">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+            </h5>
+            <h3 class="mb-0 fw-bold {% if remaining_budget < 0 %}text-danger{% else %}text-white{% endif %}">
+                {{ currency_symbol }}{{ "{:,.2f}".format(remaining_budget) }}
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <!-- CHART SECTION -->
+    <div class="col-lg-8">
+        <div class="card-premium h-100">
+            <h5 class="mb-4"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Expenditures Analysis</h5>
+            
+            <div class="row g-3">
+                <div class="col-md-6" style="height: 250px; position: relative;">
+                    <canvas id="categoryPieChart"></canvas>
+                </div>
+                <div class="col-md-6" style="height: 250px; position: relative;">
+                    <canvas id="monthlyComparisonChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="mt-4" style="height: 220px; position: relative;">
+                <canvas id="dailyTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- HEALTH SCORE AND ML PANEL -->
+    <div class="col-lg-4 d-flex flex-column gap-3">
+        <!-- FINANCIAL HEALTH SCORE -->
+        <div class="card-premium health-score-widget text-center">
+            <h5>Financial Health Index</h5>
+            <div class="score-circle" style="--score: {{ health_score }}">
+                <div class="score-value">{{ health_score }}</div>
+            </div>
+            <p class="text-secondary small mt-2">Score is calculated using savings rate and budget conformity logs.</p>
+        </div>
+        
+        <!-- ML FORECASTS -->
+        <div class="card-premium">
+            <h5 class="mb-3"><i class="bi bi-cpu-fill text-warning me-2"></i>AI ML Forecasts</h5>
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small">Next Week Forecast</span>
+                    <strong class="text-white">
+                        {% if predictions.next_week is number %}
+                            {{ currency_symbol }}{{ "{:,.2f}".format(predictions.next_week) }}
+                        {% else %}
+                            {{ predictions.next_week }}
+                        {% endif %}
+                    </strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small">Next Month Forecast</span>
+                    <strong class="text-white">
+                        {% if predictions.next_month is number %}
+                            {{ currency_symbol }}{{ "{:,.2f}".format(predictions.next_month) }}
+                        {% else %}
+                            {{ predictions.next_month }}
+                        {% endif %}
+                    </strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small">Spending Trend</span>
+                    <span class="badge {% if predictions.trend == 'Upward' %}bg-danger{% elif predictions.trend == 'Downward' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ predictions.trend }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI RECOMMENDATIONS -->
+        <div class="card-premium flex-grow-1">
+            <h5 class="mb-3"><i class="bi bi-lightbulb-fill text-info me-2"></i>AI Recommendations</h5>
+            <div class="d-flex flex-column gap-2 small">
+                {% for insight in ai_insights %}
+                    <div class="p-2 bg-dark rounded border border-secondary text-secondary">
+                        {{ insight }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <!-- TRANSACTION LEDGER -->
+    <div class="col-12">
+        <div class="card-premium">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="bi bi-list-stars me-2"></i>Recent Transaction Ledger</h5>
+                <a href="{{ url_for('expenses.index') }}" class="btn btn-sm btn-outline-secondary text-white">Manage All</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-dark table-hover table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in recent_transactions %}
+                        <tr>
+                            <td>{{ tx.date }}</td>
+                            <td>{{ tx.category }}</td>
+                            <td>{{ tx.description or 'N/A' }}</td>
+                            <td class="fw-bold {% if tx.amount > (budget / 30) %}text-danger{% else %}text-success{% endif %}">
+                                {{ currency_symbol }}{{ "{:,.2f}".format(tx.amount) }}
+                            </td>
+                            <td>
+                                {% if tx.receipt %}
+                                <a href="{{ url_for('expenses.view_receipt', filename=tx.receipt) }}" target="_blank" class="btn btn-xs btn-outline-info py-0 px-2 small">
+                                    <i class="bi bi-file-earmark-image"></i>
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">None</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No transactions found. Start adding expenses!</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Load Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Serialize data coordinates from server context globals
+    const categoryData = {{ category_summary | tojson }};
+    const monthlyData = {{ monthly_summary | tojson }};
+    const dailyData = {{ daily_summary | tojson }};
+    const incomeData = {{ income_by_month | tojson }};
+    
+    // Global Chart.js Settings
+    Chart.defaults.color = '#9ca3af';
+    Chart.defaults.borderColor = 'rgba(156, 163, 175, 0.15)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    
+    // 1. DOUGHNUT PIE CHART - CATEGORIES
+    const pieCtx = document.getElementById('categoryPieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(categoryData),
+            datasets: [{
+                data: Object.values(categoryData),
+                backgroundColor: ['#6366f1', '#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#3b82f6'],
+                borderWidth: 1,
+                borderColor: '#111827'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { boxWidth: 12, font: { size: 10 } }
+                },
+                title: {
+                    display: true,
+                    text: 'Spend by Category',
+                    color: '#f9fafb',
+                    font: { size: 12, weight: 'bold' }
+                }
+            }
+        }
+    });
+
+    // 2. COMPARISON CHART - INCOME VS EXPENSES BY MONTH
+    const comparisonCtx = document.getElementById('monthlyComparisonChart').getContext('2d');
+    const months = Array.from(new Set([...Object.keys(monthlyData), ...Object.keys(incomeData)])).sort().slice(-6);
+    
+    const expValues = months.map(m => monthlyData[m] || 0.0);
+    const incValues = months.map(m => incomeData[m] || 0.0);
+    
+    new Chart(comparisonCtx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Income',
+                    data: incValues,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Expenses',
+                    data: expValues,
+                    backgroundColor: '#ef4444',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } },
+                title: { display: true, text: 'Income vs Expenses Trend', color: '#f9fafb', font: { size: 12, weight: 'bold' } }
+            },
+            scales: {
+                y: { grid: { color: 'rgba(156, 163, 175, 0.08)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 3. DAILY TREND CHART (LINE) - CURRENT MONTH
+    const dailyCtx = document.getElementById('dailyTrendChart').getContext('2d');
+    const sortedDays = Object.keys(dailyData).sort((a,b) => parseInt(a) - parseInt(b));
+    const dailyValues = sortedDays.map(d => dailyData[d]);
+    
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: sortedDays.map(d => `Day ${d}`),
+            datasets: [{
+                label: 'Daily Spending ({{ currency_symbol }})',
+                data: dailyValues,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Daily Expense Curve (This Month)', color: '#f9fafb', font: { size: 12, weight: 'bold' } }
+            },
+            scales: {
+                y: { grid: { color: 'rgba(156, 163, 175, 0.08)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}
