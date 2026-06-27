@@ -49,10 +49,20 @@ def token_required(f):
             response.delete_cookie('auth_token')
             return response
             
-        current_user = User.query.get(user_id)
-        if not current_user:
-            flash("User session not found.", "warning")
-            return redirect(url_for('auth.login'))
+        try:
+            current_user = User.query.get(user_id)
+            if not current_user:
+                flash("User session not found.", "warning")
+                response = make_response(redirect(url_for('auth.login')))
+                response.delete_cookie('auth_token')
+                return response
+        except Exception as e:
+            # If the database is down or tables are missing, don't crash with 500!
+            print(f"Database error in token verification: {e}")
+            flash("Database connection error. Please try logging in again.", "danger")
+            response = make_response(redirect(url_for('auth.login')))
+            response.delete_cookie('auth_token')
+            return response
             
         g.current_user = current_user
         return f(*args, **kwargs)

@@ -78,6 +78,17 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
 
+    # Health check route for diagnostics
+    @app.route('/health')
+    def health_check():
+        try:
+            # Test database connection
+            db.session.execute(db.text('SELECT 1'))
+            db_status = "Connected to PostgreSQL" if 'postgres' in Config.SQLALCHEMY_DATABASE_URI else "Connected to SQLite"
+            return {"status": "healthy", "database": db_status}, 200
+        except Exception as e:
+            return {"status": "unhealthy", "error": str(e)}, 500
+
     # Register Blueprint routes
     from routes.auth import auth_bp
     from routes.dashboard import dashboard_bp
